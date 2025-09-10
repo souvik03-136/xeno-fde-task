@@ -5,7 +5,9 @@ A sophisticated multi-tenant Shopify data ingestion and analytics platform built
 ## 🏗️ System Architecture
 
 ### High-Level Architecture
-```
+
+
+```mermaid
 graph TB
     %% Define styles for different layers
     classDef client fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000;
@@ -73,8 +75,8 @@ graph TB
     
     %% Add some visual elements
     linkStyle 0,1,2,3,4,5,6,7 stroke:#666,stroke-width:2px;
-    
 ```
+
 
 ### 🛠️ Tech Stack
 
