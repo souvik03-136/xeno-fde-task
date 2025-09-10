@@ -27,6 +27,7 @@ model Tenant {
   products         Product[]
   orders           Order[]
   webhooks         Webhook[]
+  events           Event[]
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
@@ -44,6 +45,7 @@ model Customer {
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
   orders      Order[]
+  events      Event[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -111,12 +113,12 @@ model Webhook {
 
 model Event {
   id          String   @id @default(cuid())
-  type        String   // 'cart_abandoned', 'checkout_started', etc.
+  type        String
   customerId  String?
   customer    Customer? @relation(fields: [customerId], references: [id])
   tenantId    String
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  data        Json     // Additional event data
+  data        Json
   createdAt   DateTime @default(now())
   
   @@map("events")
