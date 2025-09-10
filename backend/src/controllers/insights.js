@@ -18,7 +18,9 @@ const getDashboardStats = async (req, res) => {
       totalOrders,
       totalRevenue,
       ordersByDate,
-      topCustomers
+      topCustomers,
+      revenueByProduct,
+      abandonedCarts
     ] = await Promise.all([
       prisma.customer.count({ where: { tenantId } }),
       
@@ -47,10 +49,54 @@ const getDashboardStats = async (req, res) => {
           firstName: true,
           lastName: true,
           email: true,
-          totalSpent: true
+          totalSpent: true,
+          ordersCount: true
+        }
+      }),
+      
+      prisma.orderItem.groupBy({
+        by: ['productId'],
+        where: {
+          order: {
+            tenantId,
+            ...dateFilter
+          }
+        },
+        _sum: {
+          price: true,
+          quantity: true
+        },
+        orderBy: {
+          _sum: {
+            price: 'desc'
+          }
+        },
+        take: 10
+      }),
+      
+      prisma.event.count({
+        where: {
+          tenantId,
+          type: 'cart_abandoned',
+          createdAt: dateFilter.orderDate || {}
         }
       })
     ]);
+
+    const productsWithDetails = await Promise.all(
+      revenueByProduct.map(async (item) => {
+        const product = await prisma.product.findUnique({
+          where: { id: item.productId },
+          select: { title: true }
+        });
+        
+        return {
+          product: product?.title || 'Unknown Product',
+          revenue: item._sum.price * item._sum.quantity,
+          quantity: item._sum.quantity
+        };
+      })
+    );
 
     res.json({
       totalCustomers,
@@ -61,7 +107,9 @@ const getDashboardStats = async (req, res) => {
         orders: item._count.id,
         revenue: item._sum.totalPrice || 0
       })),
-      topCustomers
+      topCustomers,
+      revenueByProduct: productsWithDetails,
+      abandonedCarts
     });
   } catch (error) {
     console.error('Insights error:', error);
@@ -69,4 +117,47 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
-module.exports = { getDashboardStats };
+const getAbandonedCarts = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+    const tenantId = req.tenant.id;
+
+    const dateFilter = {};
+    if (startDate && endDate) {
+      dateFilter.createdAt = {
+        gte: new Date(startDate),
+        lte: new Date(endDate)
+      };
+    }
+
+    const abandonedCarts = await prisma.event.findMany({
+      where: {
+        tenantId,
+        type: 'cart_abandoned',
+        ...dateFilter
+      },
+      include: {
+        customer: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    res.json(abandonedCarts);
+  } catch (error) {
+    console.error('Abandoned carts error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+module.exports = { 
+  getDashboardStats, 
+  getAbandonedCarts 
+};

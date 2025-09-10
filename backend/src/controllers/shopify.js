@@ -1,9 +1,14 @@
 const prisma = require('../models');
-const { syncShopifyData } = require('../services/shopify');
+const { syncShopifyData, setupWebhooks, shopifyRequest } = require('../services/shopify');
 
 const syncData = async (req, res) => {
   try {
     await syncShopifyData(req.tenant);
+    
+    if (req.tenant.shopifyToken) {
+      await setupWebhooks(req.tenant);
+    }
+    
     res.json({ message: 'Data sync completed' });
   } catch (error) {
     console.error('Sync error:', error);
@@ -11,82 +16,40 @@ const syncData = async (req, res) => {
   }
 };
 
-const webhookHandler = async (req, res) => {
+const registerWebhooks = async (req, res) => {
   try {
-    const { topic } = req.headers;
-    const data = req.body;
-
-    switch (topic) {
-      case 'orders/create':
-        await handleOrderCreate(data);
-        break;
-      case 'customers/create':
-        await handleCustomerCreate(data);
-        break;
+    if (!req.tenant.shopifyToken) {
+      return res.status(400).json({ error: 'Shopify token required for webhook registration' });
     }
-
-    res.status(200).json({ received: true });
+    
+    await setupWebhooks(req.tenant);
+    res.json({ message: 'Webhooks registered successfully' });
   } catch (error) {
-    console.error('Webhook error:', error);
-    res.status(500).json({ error: 'Webhook processing failed' });
+    console.error('Webhook registration error:', error);
+    res.status(500).json({ error: 'Webhook registration failed' });
   }
 };
 
-const handleOrderCreate = async (orderData) => {
-  const tenant = await prisma.tenant.findFirst({
-    where: { shopifyDomain: orderData.domain }
-  });
-
-  if (!tenant) return;
-
-  await prisma.order.upsert({
-    where: {
-      shopifyId_tenantId: {
-        shopifyId: orderData.id.toString(),
-        tenantId: tenant.id
-      }
-    },
-    update: {
-      totalPrice: parseFloat(orderData.total_price)
-    },
-    create: {
-      shopifyId: orderData.id.toString(),
-      orderNumber: orderData.order_number,
-      totalPrice: parseFloat(orderData.total_price),
-      orderDate: new Date(orderData.created_at),
-      tenantId: tenant.id,
-      customerId: 'temp-customer-id'
+const getShopifyData = async (req, res) => {
+  try {
+    const { resource, id } = req.params;
+    
+    if (!['products', 'customers', 'orders'].includes(resource)) {
+      return res.status(400).json({ error: 'Invalid resource type' });
     }
-  });
+    
+    const endpoint = id ? `${resource}/${id}.json` : `${resource}.json`;
+    const response = await shopifyRequest(req.tenant, endpoint);
+    
+    res.json(response.data);
+  } catch (error) {
+    console.error('Shopify API error:', error);
+    res.status(500).json({ error: 'Failed to fetch Shopify data' });
+  }
 };
 
-const handleCustomerCreate = async (customerData) => {
-  const tenant = await prisma.tenant.findFirst({
-    where: { shopifyDomain: customerData.domain }
-  });
-
-  if (!tenant) return;
-
-  await prisma.customer.upsert({
-    where: {
-      shopifyId_tenantId: {
-        shopifyId: customerData.id.toString(),
-        tenantId: tenant.id
-      }
-    },
-    update: {
-      email: customerData.email,
-      firstName: customerData.first_name,
-      lastName: customerData.last_name
-    },
-    create: {
-      shopifyId: customerData.id.toString(),
-      email: customerData.email,
-      firstName: customerData.first_name,
-      lastName: customerData.last_name,
-      tenantId: tenant.id
-    }
-  });
+module.exports = { 
+  syncData, 
+  registerWebhooks,
+  getShopifyData 
 };
-
-module.exports = { syncData, webhookHandler };
