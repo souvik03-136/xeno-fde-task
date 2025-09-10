@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  tenants   Tenant[]
+  createdAt DateTime @default(now())
+}
+
+model Tenant {
+  id               String    @id @default(cuid())
+  name             String
+  shopifyDomain    String    @unique
+  shopifyToken     String?
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+  customers        Customer[]
+  products         Product[]
+  orders           Order[]
+  createdAt        DateTime  @default(now())
+}
+
+model Customer {
+  id          String   @id @default(cuid())
+  shopifyId   String
+  email       String
+  firstName   String?
+  lastName    String?
+  totalSpent  Float    @default(0)
+  ordersCount Int      @default(0)
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  orders      Order[]
+  createdAt   DateTime @default(now())
+
+  @@unique([shopifyId, tenantId])
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  shopifyId   String
+  title       String
+  price       Float
+  tenantId    String
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
+  orderItems  OrderItem[]
+  createdAt   DateTime    @default(now())
+
+  @@unique([shopifyId, tenantId])
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  shopifyId   String
+  orderNumber String
+  totalPrice  Float
+  customerId  String
+  customer    Customer    @relation(fields: [customerId], references: [id])
+  tenantId    String
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
+  orderDate   DateTime
+
+  @@unique([shopifyId, tenantId])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  quantity  Int
+  price     Float
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+}
