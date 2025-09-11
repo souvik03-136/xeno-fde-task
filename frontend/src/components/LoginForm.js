@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { signIn } from 'next-auth/react';
 import api from '../lib/api';
 
 export default function LoginForm({ onLogin }) {
@@ -16,13 +17,31 @@ export default function LoginForm({ onLogin }) {
     setError('');
 
     try {
-      const endpoint = isLogin ? '/auth/login' : '/auth/register';
-      const response = await api.post(endpoint, formData);
-      
-      localStorage.setItem('token', response.data.token);
-      
-      const tenantsResponse = await api.get('/tenant');
-      onLogin(response.data.user, tenantsResponse.data);
+      if (isLogin) {
+        // Use NextAuth signIn for login
+        const result = await signIn('credentials', {
+          redirect: false,
+          email: formData.email,
+          password: formData.password
+        });
+        
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
+        
+        // Fetch tenants after successful login
+        const tenantsResponse = await api.get('/tenant');
+        onLogin({ email: formData.email }, tenantsResponse.data);
+      } else {
+        // Handle registration (not using NextAuth)
+        const response = await api.post('/auth/register', formData);
+        
+        localStorage.setItem('token', response.data.token);
+        
+        const tenantsResponse = await api.get('/tenant');
+        onLogin(response.data.user, tenantsResponse.data);
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'An error occurred');
     } finally {
