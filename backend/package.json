@@ -7,7 +7,8 @@
     "start": "node src/app.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    "test:shopify": "node test-shopify-connection.js"
   },
   "dependencies": {
     "express": "^4.18.2",
