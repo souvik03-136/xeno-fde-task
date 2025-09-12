@@ -8,6 +8,7 @@ const tenantRoutes = require('./routes/tenant');
 const shopifyRoutes = require('./routes/shopify');
 const insightsRoutes = require('./routes/insights');
 const webhookRoutes = require('./routes/webhook');
+const { setupScheduler } = require('./services/scheduler');
 
 const app = express();
 
@@ -29,6 +30,8 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   
+  setupScheduler();
+
   if (process.env.NODE_ENV !== 'production') {
     console.log(`Health check: http://localhost:${PORT}/health`);
   }

@@ -1,0 +1,71 @@
+@baseUrl = http://localhost:3001
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWZoMWE1YnIwMDAwd3V6eGtrZnYzNTZqIiwiaWF0IjoxNzU3NjkzODQxLCJleHAiOjE3NTgyOTg2NDF9.aGyviQMlfnMLiAOPSVwdBzTPED-i2BNofyX6l7PDfUU
+@tenantId = cmfh1jiy00002wuzxzgv0hwhn
+@email = {{email}}
+@password = {{password}}
+@shopifyDomain = shoplytics-demo-store.myshopify.com
+@shopifyToken = {{shopify_token}}
+
+### Health Check
+GET {{baseUrl}}/health
+
+### Register
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Create Tenant
+POST {{baseUrl}}/api/tenant
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "shoplytics-demo-store",
+  "shopifyDomain": "{{shopifyDomain}}",
+  "shopifyToken": "{{shopifyToken}}"
+}
+
+### Get Tenants
+GET {{baseUrl}}/api/tenant
+Authorization: Bearer {{token}}
+
+### Shopify Sync
+POST {{baseUrl}}/api/shopify/sync
+Authorization: Bearer {{token}}
+x-tenant-id: {{tenantId}}
+
+### Dashboard Stats
+GET {{baseUrl}}/api/insights/dashboard?startDate=2023-01-01&endDate=2023-12-31
+Authorization: Bearer {{token}}
+x-tenant-id: {{tenantId}}
+
+### Abandoned Carts
+GET {{baseUrl}}/api/insights/abandoned-carts?startDate=2023-01-01&endDate=2023-12-31
+Authorization: Bearer {{token}}
+x-tenant-id: {{tenantId}}
+
+### Register Webhooks
+POST {{baseUrl}}/api/shopify/webhooks/register
+Authorization: Bearer {{token}}
+x-tenant-id: {{tenantId}}
+
+### Webhook Receiver (Simulate Shopify Webhook)
+POST {{baseUrl}}/api/webhook/{{tenantId}}
+Content-Type: application/json
+
+{
+  "test": "webhook_event"
+}

@@ -1,50 +1,58 @@
 require('dotenv').config();
 const prisma = require('./src/models');
 
-async function createUserAndTenant() {
+async function createTenant() {
   try {
-    const user = await prisma.user.upsert({
-      where: { email: 'admin@shopify-sync.com' },
-      update: {
-        updatedAt: new Date()
-      },
-      create: {
-        email: 'admin@shopify-sync.com',
-        password: 'temp-password-hash',
-        createdAt: new Date(),
-        updatedAt: new Date()
+    const domain = process.env.SHOPIFY_DOMAIN;
+    const token = process.env.SHOPIFY_ACCESS_TOKEN;
+
+    if (!domain || !token) {
+      console.error('Missing required environment variables: SHOPIFY_DOMAIN and SHOPIFY_ACCESS_TOKEN');
+      process.exit(1);
+    }
+
+    let user = await prisma.user.findFirst({
+      where: { email: 'admin@test.com' }
+    });
+
+    if (!user) {
+      const bcrypt = require('bcryptjs');
+      const hashedPassword = await bcrypt.hash('password123', 12);
+      
+      user = await prisma.user.create({
+        data: {
+          email: 'admin@test.com',
+          password: hashedPassword
+        }
+      });
+      console.log('Created default user: admin@test.com / password123');
+    }
+
+    const existingTenant = await prisma.tenant.findFirst({
+      where: { shopifyDomain: domain }
+    });
+
+    if (existingTenant) {
+      console.log('Tenant already exists:', existingTenant);
+      return;
+    }
+
+    const tenant = await prisma.tenant.create({
+      data: {
+        name: domain.replace('.myshopify.com', ''),
+        shopifyDomain: domain,
+        shopifyToken: token,
+        userId: user.id
       }
     });
 
-    console.log('User created/updated:', user.email);
+    console.log('Tenant created successfully:', tenant);
 
-    const tenant = await prisma.tenant.upsert({
-      where: { shopifyDomain: process.env.SHOPIFY_DOMAIN },
-      update: {
-        name: process.env.SHOPIFY_DOMAIN || 'development-store',
-        shopifyToken: process.env.SHOPIFY_ACCESS_TOKEN,
-        updatedAt: new Date()
-      },
-      create: {
-        name: process.env.SHOPIFY_DOMAIN || 'development-store',
-        shopifyDomain: process.env.SHOPIFY_DOMAIN,
-        shopifyToken: process.env.SHOPIFY_ACCESS_TOKEN,
-        userId: user.id,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-    });
-
-    console.log('Tenant created/updated:', tenant.name);
-    console.log('Tenant ID:', tenant.id);
-    console.log('Now update your sync to use tenant ID:', tenant.id);
-    
-    return tenant;
   } catch (error) {
-    console.error('Error creating user/tenant:', error.message);
+    console.error('Error creating tenant:', error);
   } finally {
     await prisma.$disconnect();
   }
 }
 
-createUserAndTenant();
+createTenant();

@@ -1,16 +1,17 @@
 const cron = require('node-cron');
 const prisma = require('../models');
+const { syncShopifyData } = require('./shopify');
 
 const syncAllTenants = async () => {
   try {
     console.log('Starting scheduled sync for all tenants');
-    
+
     const tenants = await prisma.tenant.findMany({
       where: {
         shopifyToken: { not: null }
       }
     });
-    
+
     for (const tenant of tenants) {
       try {
         console.log(`Syncing data for tenant: ${tenant.name}`);
@@ -20,7 +21,7 @@ const syncAllTenants = async () => {
         console.error(`Error syncing data for tenant ${tenant.name}:`, error.message);
       }
     }
-    
+
     console.log('Completed scheduled sync for all tenants');
   } catch (error) {
     console.error('Error in scheduled sync:', error);

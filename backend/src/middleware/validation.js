@@ -12,7 +12,7 @@ const loginSchema = Joi.object({
 
 const tenantSchema = Joi.object({
   name: Joi.string().required(),
-  shopifyDomain: Joi.string().domain().required(),
+  shopifyDomain: Joi.string().required(),
   shopifyToken: Joi.string().optional()
 });
 
