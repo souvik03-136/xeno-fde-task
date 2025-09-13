@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "nodemon src/app.js",
     "start": "node src/app.js",
-    "build": "echo 'No build step required'",
-    "postinstall": "npx prisma generate && npx prisma db push"
+    "build": "npx prisma generate",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
