@@ -6,7 +6,7 @@ const execPromise = util.promisify(exec);
 require('dotenv').config();
 
 const app = express();
-
+app.set('trust proxy', 1);
 // CORS configuration
 const corsOptions = {
   origin: [
