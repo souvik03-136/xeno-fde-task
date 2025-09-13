@@ -1,34 +1,16 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import { execSync } from 'child_process';
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
 
-dotenv.config();
-
-// First, ensure Prisma client is generated
-try {
-  console.log('Generating Prisma client...');
-  execSync('npx prisma generate', { stdio: 'inherit' });
-  console.log('Prisma client generated successfully');
-} catch (error) {
-  console.error('Failed to generate Prisma client:', error.message);
-  // Continue anyway - the import might still work
-}
-
-// Now import Prisma
-import { PrismaClient } from '@prisma/client';
-
-// Import your other modules
-import securityMiddleware from './middleware/security.js';
-import authRoutes from './routes/auth.js';
-import tenantRoutes from './routes/tenant.js';
-import shopifyRoutes from './routes/shopify.js';
-import insightsRoutes from './routes/insights.js';
-import webhookRoutes from './routes/webhook.js';
-import { setupScheduler } from './services/scheduler.js';
+const securityMiddleware = require('./middleware/security');
+const authRoutes = require('./routes/auth');
+const tenantRoutes = require('./routes/tenant');
+const shopifyRoutes = require('./routes/shopify');
+const insightsRoutes = require('./routes/insights');
+const webhookRoutes = require('./routes/webhook');
+const { setupScheduler } = require('./services/scheduler');
 
 const app = express();
-const prisma = new PrismaClient();
 
 const corsOptions = {
   origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
@@ -72,74 +54,13 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Database setup function
-async function setupDatabase() {
-  try {
-    // Test database connection
-    await prisma.$executeRaw`SELECT 1`;
-    console.log('Database connection successful');
-    
-    // Check if tables exist
-    try {
-      await prisma.user.findFirst();
-      console.log('Database schema appears to be intact');
-    } catch (schemaError) {
-      console.log('Database schema may need updating, attempting to push schema...');
-      try {
-        execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
-        console.log('Database schema pushed successfully');
-      } catch (pushError) {
-        console.error('Failed to push database schema:', pushError.message);
-      }
-    }
-  } catch (connectionError) {
-    console.error('Database connection failed:', connectionError.message);
-    
-    // Attempt to push schema
-    console.log('Attempting to push database schema...');
-    try {
-      execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
-      console.log('Database schema pushed successfully');
-    } catch (pushError) {
-      console.error('Failed to push database schema:', pushError.message);
-    }
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+
+  setupScheduler();
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Health check: http://localhost:${PORT}/health`);
   }
-}
-
-// Start the application
-async function startServer() {
-  try {
-    // Setup database first
-    await setupDatabase();
-    
-    const PORT = process.env.PORT || 3001;
-    
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      setupScheduler();
-      
-      if (process.env.NODE_ENV !== 'production') {
-        console.log(`Health check: http://localhost:${PORT}/health`);
-      }
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
-}
-
-// Handle graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('Shutting down gracefully...');
-  await prisma.$disconnect();
-  process.exit(0);
 });
-
-process.on('SIGTERM', async () => {
-  console.log('Shutting down gracefully...');
-  await prisma.$disconnect();
-  process.exit(0);
-});
-
-// Start the server
-startServer();
