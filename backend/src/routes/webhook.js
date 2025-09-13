@@ -5,22 +5,22 @@ const { handleOrderCreate, handleCustomerCreate, handleCartUpdate } = require('.
 
 const router = express.Router();
 
-router.post('/:tenantId', verifyWebhook, async (req, res) => {
+router.post('/:tenantId', express.json(), verifyWebhook, async (req, res) => {
   try {
     const { tenantId } = req.params;
     const topic = req.webhookTopic;
     const data = req.body;
-    
+
     const tenant = await prisma.tenant.findUnique({
       where: { id: tenantId }
     });
-    
+
     if (!tenant) {
       return res.status(404).json({ error: 'Tenant not found' });
     }
-    
+
     req.tenant = tenant;
-    
+
     switch (topic) {
       case 'orders/create':
         await handleOrderCreate(data, tenant);
@@ -46,7 +46,7 @@ router.post('/:tenantId', verifyWebhook, async (req, res) => {
       default:
         console.log('Unhandled webhook topic:', topic);
     }
-    
+
     res.status(200).json({ received: true });
   } catch (error) {
     console.error('Webhook processing error:', error);

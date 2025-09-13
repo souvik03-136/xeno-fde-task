@@ -439,11 +439,27 @@ const syncShopifyData = async (tenant = null) => {
 
 const setupWebhooks = async (tenant) => {
   try {
-    const webhookEndpoint = `${process.env.BASE_URL}/api/webhook/${tenant.id}`;
+    const baseUrl = process.env.BASE_URL;
     
+    // Skip webhook registration for localhost URLs
+    if (!baseUrl || baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1')) {
+      console.log('Skipping webhook registration - localhost URL not accessible to Shopify');
+      return;
+    }
+
+    const webhookEndpoint = `${baseUrl}/api/webhook/${tenant.id}`;
+
+    // First, get existing webhooks to avoid duplicates
+    try {
+      const existingWebhooks = await shopifyRequest(tenant, 'webhooks', 'GET');
+      console.log(`Found ${existingWebhooks.data.webhooks.length} existing webhooks`);
+    } catch (error) {
+      console.log('Could not fetch existing webhooks:', error.message);
+    }
+
     const webhooksToRegister = [
       'orders/create',
-      'orders/updated', 
+      'orders/updated',
       'customers/create',
       'customers/update',
       'checkouts/create',
@@ -461,7 +477,7 @@ const setupWebhooks = async (tenant) => {
         };
 
         const response = await shopifyRequest(tenant, 'webhooks', 'POST', webhookData);
-        
+
         await prisma.webhook.upsert({
           where: {
             topic_tenantId: {
@@ -482,7 +498,11 @@ const setupWebhooks = async (tenant) => {
 
         console.log(`Webhook registered: ${topic}`);
       } catch (error) {
-        console.error(`Failed to register webhook ${topic}:`, error.message);
+        if (error.response?.status === 422) {
+          console.log(`Webhook ${topic}: Already exists or invalid URL`);
+        } else {
+          console.error(`Failed to register webhook ${topic}:`, error.message);
+        }
       }
     }
   } catch (error) {

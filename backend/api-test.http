@@ -1,8 +1,8 @@
 @baseUrl = http://localhost:3001
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWZoMWE1YnIwMDAwd3V6eGtrZnYzNTZqIiwiaWF0IjoxNzU3NjkzODQxLCJleHAiOjE3NTgyOTg2NDF9.aGyviQMlfnMLiAOPSVwdBzTPED-i2BNofyX6l7PDfUU
-@tenantId = cmfh1jiy00002wuzxzgv0hwhn
-@email = {{email}}
-@password = {{password}}
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWZodTE3MGgwMDAwbjNuMDk4NXBnaHcwIiwiaWF0IjoxNzU3NzQxNzI3LCJleHAiOjE3NTgzNDY1Mjd9.m_cLhoc-i--cYZGB2fCNiw6Vf3bUCMmD9insCrO9Mac
+@tenantId = cmfhu21ns0002n3n0wl1fp7p9
+@email = souvikmahanta2003@gmail.com
+@password = Abss@136
 @shopifyDomain = shoplytics-demo-store.myshopify.com
 @shopifyToken = {{shopify_token}}
 
