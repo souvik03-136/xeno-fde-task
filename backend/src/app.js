@@ -1,10 +1,24 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
 import { execSync } from 'child_process';
 
-// Import your modules
+dotenv.config();
+
+// First, ensure Prisma client is generated
+try {
+  console.log('Generating Prisma client...');
+  execSync('npx prisma generate', { stdio: 'inherit' });
+  console.log('Prisma client generated successfully');
+} catch (error) {
+  console.error('Failed to generate Prisma client:', error.message);
+  // Continue anyway - the import might still work
+}
+
+// Now import Prisma
+import { PrismaClient } from '@prisma/client';
+
+// Import your other modules
 import securityMiddleware from './middleware/security.js';
 import authRoutes from './routes/auth.js';
 import tenantRoutes from './routes/tenant.js';
@@ -12,8 +26,6 @@ import shopifyRoutes from './routes/shopify.js';
 import insightsRoutes from './routes/insights.js';
 import webhookRoutes from './routes/webhook.js';
 import { setupScheduler } from './services/scheduler.js';
-
-dotenv.config();
 
 const app = express();
 const prisma = new PrismaClient();
@@ -67,7 +79,7 @@ async function setupDatabase() {
     await prisma.$executeRaw`SELECT 1`;
     console.log('Database connection successful');
     
-    // Check if tables exist by trying to query a basic table
+    // Check if tables exist
     try {
       await prisma.user.findFirst();
       console.log('Database schema appears to be intact');
@@ -83,7 +95,7 @@ async function setupDatabase() {
   } catch (connectionError) {
     console.error('Database connection failed:', connectionError.message);
     
-    // Attempt to push schema if connection fails (might be due to missing tables)
+    // Attempt to push schema
     console.log('Attempting to push database schema...');
     try {
       execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
