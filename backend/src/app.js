@@ -7,16 +7,36 @@ require('dotenv').config();
 
 const app = express();
 app.set('trust proxy', 1);
+
+
 // CORS configuration
 const corsOptions = {
   origin: [
     'http://localhost:3000', 
     'http://127.0.0.1:3000',
-    // Add your frontend URL here when you deploy it
-    process.env.FRONTEND_URL
+    // Your main Vercel domain
+    process.env.FRONTEND_URL,
+    // Additional Vercel deployment patterns
+    'https://xenofrontend-nu.vercel.app',
+    'https://xenofrontend-git-main-souvik03-136s-projects.vercel.app',
+    // Pattern to match all Vercel preview deployments
+    /^https:\/\/xenofrontend-.*\.vercel\.app$/,
+    /^https:\/\/xenofrontend-.*-souvik03-136s-projects\.vercel\.app$/,
   ].filter(Boolean),
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  // Add these to handle preflight requests properly
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'x-tenant-id',
+    'Accept',
+    'Origin',
+    'X-Requested-With',
+    'Access-Control-Request-Method',
+    'Access-Control-Request-Headers'
+  ]
 };
 
 app.use(cors(corsOptions));
