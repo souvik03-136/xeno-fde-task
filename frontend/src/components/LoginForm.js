@@ -18,32 +18,60 @@ export default function LoginForm({ onLogin }) {
 
     try {
       if (isLogin) {
-        // Use NextAuth signIn for login
         const result = await signIn('credentials', {
           redirect: false,
           email: formData.email,
           password: formData.password
         });
-        
-        if (result.error) {
-          setError(result.error);
+
+        if (result?.error) {
+          setError('Invalid credentials');
           return;
         }
-        
-        // Fetch tenants after successful login
-        const tenantsResponse = await api.get('/tenant');
-        onLogin({ email: formData.email }, tenantsResponse.data);
+
+        if (result?.ok) {
+          try {
+            const tenantsResponse = await api.get('/tenant');
+            onLogin({ email: formData.email }, tenantsResponse.data);
+          } catch (apiError) {
+            console.error('Error fetching tenants:', apiError);
+            onLogin({ email: formData.email }, []);
+          }
+        }
       } else {
-        // Handle registration (not using NextAuth)
-        const response = await api.post('/auth/register', formData);
-        
-        localStorage.setItem('token', response.data.token);
-        
-        const tenantsResponse = await api.get('/tenant');
-        onLogin(response.data.user, tenantsResponse.data);
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Registration failed');
+          }
+
+          const data = await response.json();
+          
+          const loginResult = await signIn('credentials', {
+            redirect: false,
+            email: formData.email,
+            password: formData.password
+          });
+
+          if (loginResult?.ok) {
+            const tenantsResponse = await api.get('/tenant');
+            onLogin(data.user, tenantsResponse.data);
+          }
+        } catch (registerError) {
+          setError(registerError.message || 'Registration failed');
+        }
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'An error occurred');
+      console.error('Auth error:', err);
+      setError('An error occurred during authentication');
     } finally {
       setLoading(false);
     }
@@ -52,9 +80,9 @@ export default function LoginForm({ onLogin }) {
   return (
     <form onSubmit={handleSubmit}>
       <h2>{isLogin ? 'Login' : 'Register'}</h2>
-      
+
       {error && <div style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
-      
+
       <div style={{ marginBottom: '15px' }}>
         <input
           type="email"
@@ -65,7 +93,7 @@ export default function LoginForm({ onLogin }) {
           style={{ width: '100%', padding: '10px', border: '1px solid #ccc' }}
         />
       </div>
-      
+
       <div style={{ marginBottom: '15px' }}>
         <input
           type="password"
@@ -76,14 +104,14 @@ export default function LoginForm({ onLogin }) {
           style={{ width: '100%', padding: '10px', border: '1px solid #ccc' }}
         />
       </div>
-      
-      <button 
-        type="submit" 
+
+      <button
+        type="submit"
         disabled={loading}
-        style={{ 
-          width: '100%', 
-          padding: '10px', 
-          backgroundColor: '#007bff', 
+        style={{
+          width: '100%',
+          padding: '10px',
+          backgroundColor: '#007bff',
           color: 'white',
           border: 'none',
           cursor: 'pointer'
@@ -91,7 +119,7 @@ export default function LoginForm({ onLogin }) {
       >
         {loading ? 'Loading...' : (isLogin ? 'Login' : 'Register')}
       </button>
-      
+
       <p style={{ textAlign: 'center', marginTop: '15px' }}>
         {isLogin ? "Don't have an account? " : "Already have an account? "}
         <button

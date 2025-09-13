@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  BarChart, Bar, PieChart, Pie, Cell 
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, PieChart, Pie, Cell
 } from 'recharts';
 import api from '../lib/api';
 
@@ -12,6 +12,8 @@ export default function Dashboard({ onLogout }) {
   const { data: session } = useSession();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [message, setMessage] = useState('');
   const [dateRange, setDateRange] = useState({
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0]
@@ -20,14 +22,17 @@ export default function Dashboard({ onLogout }) {
 
   const fetchStats = async () => {
     try {
+      setLoading(true);
       const params = new URLSearchParams();
       if (dateRange.startDate) params.append('startDate', dateRange.startDate);
       if (dateRange.endDate) params.append('endDate', dateRange.endDate);
-      
+
       const response = await api.get(`/insights/dashboard?${params}`);
       setStats(response.data);
+      setMessage('');
     } catch (err) {
       console.error('Error fetching stats:', err);
+      setMessage('Error loading dashboard data');
     } finally {
       setLoading(false);
     }
@@ -35,11 +40,18 @@ export default function Dashboard({ onLogout }) {
 
   const syncData = async () => {
     try {
+      setSyncing(true);
+      setMessage('Syncing data...');
       await api.post('/shopify/sync');
       await fetchStats();
-      alert('Data synced successfully!');
+      setMessage('Data synced successfully!');
+      setTimeout(() => setMessage(''), 3000);
     } catch (err) {
-      alert('Sync failed. Please check your Shopify configuration.');
+      console.error('Sync error:', err);
+      setMessage('Sync failed. Please check your Shopify configuration.');
+      setTimeout(() => setMessage(''), 5000);
+    } finally {
+      setSyncing(false);
     }
   };
 
@@ -58,8 +70,12 @@ export default function Dashboard({ onLogout }) {
       <div className="dashboard-header">
         <h1>Shopify Analytics Dashboard</h1>
         <div className="header-actions">
-          <button className="btn btn-primary" onClick={syncData}>
-            Sync Data
+          <button 
+            className="btn btn-primary" 
+            onClick={syncData}
+            disabled={syncing}
+          >
+            {syncing ? 'Syncing...' : 'Sync Data'}
           </button>
           <button className="btn btn-secondary" onClick={() => signOut()}>
             Logout
@@ -67,35 +83,48 @@ export default function Dashboard({ onLogout }) {
         </div>
       </div>
 
+      {message && (
+        <div style={{ 
+          padding: '10px', 
+          marginBottom: '20px', 
+          backgroundColor: message.includes('Error') || message.includes('failed') ? '#f8d7da' : '#d4edda',
+          color: message.includes('Error') || message.includes('failed') ? '#721c24' : '#155724',
+          border: `1px solid ${message.includes('Error') || message.includes('failed') ? '#f5c6cb' : '#c3e6cb'}`,
+          borderRadius: '4px'
+        }}>
+          {message}
+        </div>
+      )}
+
       <div className="date-filter">
         <label>Start Date:</label>
-        <input 
-          type="date" 
+        <input
+          type="date"
           value={dateRange.startDate}
           onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
         />
         <label>End Date:</label>
-        <input 
-          type="date" 
+        <input
+          type="date"
           value={dateRange.endDate}
           onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
         />
       </div>
 
       <div className="tab-navigation">
-        <button 
+        <button
           className={activeTab === 'overview' ? 'active' : ''}
           onClick={() => setActiveTab('overview')}
         >
           Overview
         </button>
-        <button 
+        <button
           className={activeTab === 'customers' ? 'active' : ''}
           onClick={() => setActiveTab('customers')}
         >
           Customers
         </button>
-        <button 
+        <button
           className={activeTab === 'products' ? 'active' : ''}
           onClick={() => setActiveTab('products')}
         >
@@ -110,17 +139,17 @@ export default function Dashboard({ onLogout }) {
               <h3>Total Customers</h3>
               <p className="stat-number">{stats?.totalCustomers || 0}</p>
             </div>
-            
+
             <div className="stat-card">
               <h3>Total Orders</h3>
               <p className="stat-number">{stats?.totalOrders || 0}</p>
             </div>
-            
+
             <div className="stat-card">
               <h3>Total Revenue</h3>
               <p className="stat-number">${(stats?.totalRevenue || 0).toFixed(2)}</p>
             </div>
-            
+
             <div className="stat-card">
               <h3>Abandoned Carts</h3>
               <p className="stat-number">{stats?.abandonedCarts || 0}</p>

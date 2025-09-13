@@ -33,7 +33,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "name": "shoplytics-demo-store",
+  "name": "shoplytics-demo-store", 
   "shopifyDomain": "{{shopifyDomain}}",
   "shopifyToken": "{{shopifyToken}}"
 }

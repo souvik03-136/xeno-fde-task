@@ -1,23 +1,25 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      router.push('/dashboard');
+    if (status === 'loading') return;
+
+    if (session) {
+      const tenantId = localStorage.getItem('tenantId');
+      if (tenantId) {
+        router.push('/dashboard');
+      } else {
+        router.push('/login');
+      }
     } else {
       router.push('/login');
     }
-    setLoading(false);
-  }, []);
+  }, [session, status, router]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  return null;
+  return <div>Loading...</div>;
 }

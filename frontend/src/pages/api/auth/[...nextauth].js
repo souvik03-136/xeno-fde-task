@@ -16,14 +16,27 @@ export default NextAuth({
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(credentials),
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password
+            }),
           });
 
-          const user = await res.json();
-
-          if (res.ok && user) {
-            return user;
+          if (!res.ok) {
+            console.error('Login failed:', res.status, res.statusText);
+            return null;
           }
+
+          const data = await res.json();
+          
+          if (data && data.token && data.user) {
+            return {
+              id: data.user.id,
+              email: data.user.email,
+              token: data.token
+            };
+          }
+          
           return null;
         } catch (error) {
           console.error('Auth error:', error);
@@ -36,17 +49,23 @@ export default NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.token;
-        token.user = user.user;
+        token.id = user.id;
+        token.email = user.email;
       }
       return token;
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken;
-      session.user = token.user;
+      session.user.id = token.id;
+      session.user.email = token.email;
       return session;
     }
   },
   pages: {
     signIn: '/login',
-  }
+  },
+  session: {
+    strategy: 'jwt',
+  },
+  secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-here'
 });
