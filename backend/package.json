@@ -2,9 +2,13 @@
   "name": "xeno-fde-backend",
   "version": "1.0.0",
   "main": "src/app.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "nodemon src/app.js",
     "start": "node src/app.js",
+    "build": "echo 'Build completed'",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
@@ -16,6 +20,7 @@
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
     "@prisma/client": "^5.6.0",
+    "prisma": "^5.6.0",
     "axios": "^1.5.0",
     "node-cron": "^3.0.3",
     "dotenv": "^16.3.1",
@@ -24,7 +29,6 @@
     "express-rate-limit": "^6.7.0"
   },
   "devDependencies": {
-    "prisma": "^5.6.0",
     "nodemon": "^3.0.1"
   }
 }
