@@ -1,9 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const { exec } = require('child_process');
-const { promisify } = require('util');
-const execAsync = promisify(exec);
-
 require('dotenv').config();
 
 const securityMiddleware = require('./middleware/security');
@@ -26,7 +22,7 @@ app.use(cors(corsOptions));
 
 app.use('/api/webhook', express.raw({ type: 'application/json' }));
 
-app.use(express.json({
+app.use(express.json({ 
   limit: '10mb',
   verify: (req, res, buf) => {
     try {
@@ -59,45 +55,12 @@ app.get('/health', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 
-// Initialize Prisma client and start server
-async function startServer() {
-  try {
-    console.log('Generating Prisma client...');
-    await execAsync('npx prisma generate');
-    console.log('Prisma client generated successfully');
-    
-    // Push database schema if in production
-    if (process.env.NODE_ENV === 'production') {
-      console.log('Pushing database schema...');
-      await execAsync('npx prisma db push');
-      console.log('Database schema updated');
-    }
-  } catch (error) {
-    console.log('Prisma setup warning:', error.message);
-    console.log('Continuing with existing Prisma client...');
+  setupScheduler();
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Health check: http://localhost:${PORT}/health`);
   }
-
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-
-    setupScheduler();
-
-    if (process.env.NODE_ENV !== 'production') {
-      console.log(`Health check: http://localhost:${PORT}/health`);
-    }
-  });
-}
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  process.exit(0);
 });
-
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully');
-  process.exit(0);
-});
-
-startServer();
