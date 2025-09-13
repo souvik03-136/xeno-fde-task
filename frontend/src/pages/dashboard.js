@@ -19,12 +19,12 @@ export default function DashboardPage() {
     }
 
     validateTenant();
-  }, [session, status, router]);
+  }, [session, status]);
 
   const validateTenant = async () => {
     setValidatingTenant(true);
     const tenantId = localStorage.getItem('tenantId');
-    
+
     if (!tenantId) {
       router.push('/login');
       return;
@@ -34,13 +34,13 @@ export default function DashboardPage() {
       const response = await api.get('/tenant');
       const userTenants = response.data;
       const currentTenant = userTenants.find(t => t.id === tenantId);
-      
+
       if (!currentTenant) {
         localStorage.removeItem('tenantId');
         router.push('/login');
         return;
       }
-      
+
       setLoading(false);
     } catch (error) {
       console.error('Error validating tenant:', error);

@@ -14,10 +14,10 @@ export default function Login() {
 
   useEffect(() => {
     if (status === 'loading') return;
-    
+
     if (session) {
       const tenantId = localStorage.getItem('tenantId');
-      
+
       if (tenantId) {
         router.push('/dashboard');
       } else {
@@ -25,13 +25,13 @@ export default function Login() {
         fetchTenants();
       }
     }
-  }, [session, status, router]);
+  }, [session, status]);
 
   const fetchTenants = async () => {
     try {
       const response = await api.get('/tenant');
       const userTenants = response.data;
-      
+
       if (userTenants.length === 1) {
         localStorage.setItem('tenantId', userTenants[0].id);
         router.push('/dashboard');

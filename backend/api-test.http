@@ -1,8 +1,9 @@
-@baseUrl = http://localhost:3001
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWZodTE3MGgwMDAwbjNuMDk4NXBnaHcwIiwiaWF0IjoxNzU3NzQxNzI3LCJleHAiOjE3NTgzNDY1Mjd9.m_cLhoc-i--cYZGB2fCNiw6Vf3bUCMmD9insCrO9Mac
-@tenantId = cmfhu21ns0002n3n0wl1fp7p9
-@email = souvikmahanta2003@gmail.com
-@password = Abss@136
+@baseUrl = https://xeno-backend-u3yb.onrender.com
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWZpaHMyM2swMDAwNGRhNW9lbW5ycmc4IiwiaWF0IjoxNzU3NzgxNjE2LCJleHAiOjE3NTgzODY0MTZ9.K0-jc2lcJv_SpU3FRuqOkXuwYxYhSHFAIch1ViHLdTE
+@tenantId = cmfiht9ev00024da5r8lzv0bs
+@email = {{email}}
+@password = {{pasword}}
+
 @shopifyDomain = shoplytics-demo-store.myshopify.com
 @shopifyToken = {{shopify_token}}
 
