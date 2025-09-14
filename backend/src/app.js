@@ -8,6 +8,7 @@ require('dotenv').config();
 const app = express();
 app.set('trust proxy', 1);
 
+
 // CORS configuration
 const corsOptions = {
   origin: [
@@ -40,15 +41,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Add explicit preflight handler for all routes
-app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-tenant-id, Accept, Origin, X-Requested-With, Access-Control-Request-Method, Access-Control-Request-Headers');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.sendStatus(200);
-});
-
 // Webhook route needs raw JSON
 app.use('/api/webhook', express.raw({ type: 'application/json' }));
 
@@ -65,12 +57,6 @@ app.use(express.json({
     }
   }
 }));
-
-// Add request logging middleware
-app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path} - Origin: ${req.headers.origin}`);
-  next();
-});
 
 // Initialize Prisma at runtime
 async function initializePrisma() {
@@ -136,35 +122,14 @@ app.get('/status', (req, res) => {
   });
 });
 
-// Basic auth endpoint for immediate testing (will be overridden by real auth routes)
-app.post('/api/auth/login', (req, res) => {
-  console.log('Basic auth endpoint hit - Login attempt received:', req.body);
-  res.status(501).json({
-    error: 'Auth system is still loading. Please try again in a few moments.',
-    message: 'Routes are being initialized',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Basic auth register endpoint
-app.post('/api/auth/register', (req, res) => {
-  console.log('Basic auth endpoint hit - Register attempt received:', req.body);
-  res.status(501).json({
-    error: 'Auth system is still loading. Please try again in a few moments.',
-    message: 'Routes are being initialized',
-    timestamp: new Date().toISOString()
-  });
-});
-
 // Initialize server with Prisma setup
 async function startServer() {
   const PORT = process.env.PORT || 3001;
   
   // Start server first
-  const server = app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Health check: ${process.env.BASE_URL || `http://localhost:${PORT}`}/health`);
-    console.log('CORS origins configured:', corsOptions.origin);
   });
   
   // Initialize Prisma in background
@@ -176,9 +141,6 @@ async function startServer() {
       console.log('Continuing without full Prisma setup - some features may be limited');
       setupBasicRoutes();
     }
-  }).catch(error => {
-    console.error('Error during Prisma initialization:', error);
-    setupBasicRoutes();
   });
   
   // Graceful shutdown
@@ -207,22 +169,12 @@ function setupRoutes() {
     // Apply security middleware
     securityMiddleware(app);
     
-    // Setup routes - these will override the basic auth endpoints
+    // Setup routes
     app.use('/api/auth', authRoutes);
     app.use('/api/tenant', tenantRoutes);
     app.use('/api/shopify', shopifyRoutes);
     app.use('/api/insights', insightsRoutes);
     app.use('/api/webhook', webhookRoutes);
-    
-    // 404 handler for API routes
-    app.use('/api/*', (req, res) => {
-      console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
-      res.status(404).json({ 
-        error: 'Route not found',
-        path: req.originalUrl,
-        method: req.method
-      });
-    });
     
     // Error handling middleware
     app.use((error, req, res, next) => {
@@ -230,11 +182,7 @@ function setupRoutes() {
         return res.status(400).json({ error: 'Invalid JSON format' });
       }
       console.error('Server error:', error);
-      res.status(500).json({ 
-        error: 'Internal server error',
-        message: error.message,
-        timestamp: new Date().toISOString()
-      });
+      res.status(500).json({ error: 'Internal server error' });
     });
     
     // Setup scheduler
@@ -245,67 +193,30 @@ function setupRoutes() {
     console.log('All routes loaded successfully');
   } catch (error) {
     console.error('Error loading routes:', error.message);
-    console.error('Stack trace:', error.stack);
     setupBasicRoutes();
   }
 }
 
 // Setup basic routes if full setup fails
 function setupBasicRoutes() {
-  try {
-    const securityMiddleware = require('./middleware/security');
-    securityMiddleware(app);
-    console.log('Security middleware applied');
-  } catch (error) {
-    console.warn('Security middleware not available:', error.message);
-  }
-  
-  // Mark routes as failed to load
-  routesLoaded = false;
+  const securityMiddleware = require('./middleware/security');
+  securityMiddleware(app);
   
   app.get('/api/status', (req, res) => {
     res.json({ 
       message: 'Backend is running but some features may be unavailable',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      routesLoaded: false
-    });
-  });
-  
-  // 404 handler for API routes
-  app.use('/api/*', (req, res) => {
-    console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
-    res.status(404).json({ 
-      error: 'Route not found',
-      path: req.originalUrl,
-      method: req.method,
-      message: 'This endpoint is not available or still loading'
+      timestamp: new Date().toISOString()
     });
   });
   
   // Basic error handling
   app.use((error, req, res, next) => {
     console.error('Server error:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message,
-      timestamp: new Date().toISOString()
-    });
+    res.status(500).json({ error: 'Internal server error' });
   });
   
   console.log('Basic routes loaded');
 }
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught Exception:', error);
-  process.exit(1);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  process.exit(1);
-});
 
 // Start the server
 startServer().catch(error => {
