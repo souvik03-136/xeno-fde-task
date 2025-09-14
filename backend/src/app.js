@@ -260,30 +260,15 @@ function setupBasicRoutes() {
     console.warn('Security middleware not available:', error.message);
   }
   
-  // Override basic auth endpoints with error responses
-  app.post('/api/auth/login', (req, res) => {
-    console.log('Basic fallback - Login attempt:', req.body?.email || 'no email');
-    res.status(503).json({ 
-      error: 'Authentication service unavailable',
-      message: 'Backend is running but authentication features are not fully loaded',
-      timestamp: new Date().toISOString()
-    });
-  });
-  
-  app.post('/api/auth/register', (req, res) => {
-    console.log('Basic fallback - Register attempt:', req.body?.email || 'no email');
-    res.status(503).json({ 
-      error: 'Registration service unavailable',
-      message: 'Backend is running but registration features are not fully loaded',
-      timestamp: new Date().toISOString()
-    });
-  });
+  // Mark routes as failed to load
+  routesLoaded = false;
   
   app.get('/api/status', (req, res) => {
     res.json({ 
       message: 'Backend is running but some features may be unavailable',
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
+      routesLoaded: false
     });
   });
   
