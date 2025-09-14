@@ -164,7 +164,7 @@ npm --version
 
 ```bash
 # If you haven't cloned the repository yet
-git clone <your-repository-url>
+git clone https://github.com/souvik03-136/xeno-fde-task.git
 cd xeno-fde-task
 
 # Navigate to frontend directory
