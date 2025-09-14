@@ -2,18 +2,6 @@
 
 A full-stack multi-tenant Shopify analytics platform built with Node.js, Express, Next.js, and PostgreSQL. This application enables enterprise retailers to onboard multiple Shopify stores, synchronize customer data, and gain comprehensive business insights through interactive dashboards.
 
-## 📋 Table of Contents
-
-- [Overview](#-overview)
-- [Architecture](#-architecture)
-- [Quick Start](#-quick-start)
-- [API Endpoints](#-api-endpoints)
-- [Database Schema](#-database-schema)
-- [Features](#-features)
-- [Documentation](#-documentation)
-- [Known Limitations](#-known-limitations)
-- [Contributing](#-contributing)
-
 ## 🎯 Overview
 
 The Xeno FDE platform consists of two main components:
