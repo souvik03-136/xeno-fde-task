@@ -1,21 +1,5 @@
 # Xeno FDE Backend - Multi-tenant Shopify Data Ingestion & Insights Service
 
-## 📋 Table of Contents
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Quick Start](#quick-start)
-4. [Environment Configuration](#environment-configuration)
-5. [Database Setup](#database-setup)
-6. [API Documentation](#api-documentation)
-7. [Data Models](#data-models)
-8. [Shopify Integration](#shopify-integration)
-9. [Multi-tenancy](#multi-tenancy)
-10. [Security](#security)
-11. [Deployment](#deployment)
-12. [Development](#development)
-13. [Troubleshooting](#troubleshooting)
-14. [Production Considerations](#production-considerations)
-
 ## 🎯 Overview
 
 The Xeno FDE Backend is a multi-tenant Shopify data ingestion and insights service that enables enterprise retailers to onboard, integrate, and analyze their customer data. Built with Node.js, Express, Prisma, and PostgreSQL, it provides comprehensive API endpoints for authentication, tenant management, data synchronization, and business insights.
