@@ -29,10 +29,21 @@ export default NextAuth({
           });
 
           console.log('Login response status:', res.status);
+          console.log('Login response headers:', Object.fromEntries(res.headers.entries()));
 
           if (!res.ok) {
             const errorText = await res.text();
-            console.error('Login failed:', res.status, res.statusText, errorText);
+            console.error('Login failed:', res.status, res.statusText);
+            console.error('Response body:', errorText);
+            return null;
+          }
+
+          // Check if response is JSON
+          const contentType = res.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            const responseText = await res.text();
+            console.error('Expected JSON but got:', contentType);
+            console.error('Response body:', responseText);
             return null;
           }
 
