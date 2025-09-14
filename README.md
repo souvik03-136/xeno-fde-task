@@ -96,7 +96,7 @@ graph TB
 
 ### 1. Clone Repository
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/souvik03-136/xeno-fde-task.git
 cd xeno-fde-task
 ```
 
