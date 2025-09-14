@@ -331,7 +331,7 @@ body::before {
   transform: scale(1.02);
 }
 
-/*  REVOLUTIONARY TAB NAVIGATION */
+/* 🚀 REVOLUTIONARY TAB NAVIGATION - FIXED VERSION */
 .tab-navigation {
   display: flex;
   margin-bottom: 30px;
@@ -355,6 +355,7 @@ body::before {
   border-radius: 17px;
   transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   box-shadow: 0 5px 20px rgba(0, 255, 136, 0.4);
+  z-index: 1;
 }
 
 .tab-navigation button {
@@ -376,11 +377,16 @@ body::before {
   font-weight: 800;
 }
 
-.tab-navigation button:nth-child(2).active ~ ::before {
+/* Fixed highlight positioning classes */
+.tab-navigation.tab-0::before {
+  transform: translateX(0%);
+}
+
+.tab-navigation.tab-1::before {
   transform: translateX(100%);
 }
 
-.tab-navigation button:nth-child(3).active ~ ::before {
+.tab-navigation.tab-2::before {
   transform: translateX(200%);
 }
 
@@ -599,7 +605,7 @@ body::before {
   transform: translateX(100%) skewX(-15deg);
 }
 
-/*  LOGIN WITH QUANTUM EFFECT */
+/* 🎯 LOGIN WITH QUANTUM EFFECT */
 .login-container {
   max-width: 500px;
   margin: 100px auto;
@@ -763,6 +769,15 @@ body::before {
 
 @keyframes borderSpin {
   to { transform: rotate(360deg); }
+}
+
+/* Hidden class for tab content */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
 }
 
 /* 📱 RESPONSIVE DESIGN */
