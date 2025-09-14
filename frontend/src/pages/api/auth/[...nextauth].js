@@ -11,7 +11,13 @@ export default NextAuth({
       },
       async authorize(credentials) {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
+          // Fix: Use the correct backend URL and route path
+          const backendUrl = process.env.BACKEND_URL || 'https://xeno-backend-u3yb.onrender.com';
+          const loginUrl = `${backendUrl}/api/auth/login`;
+          
+          console.log('Attempting login to:', loginUrl);
+          
+          const res = await fetch(loginUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -22,17 +28,22 @@ export default NextAuth({
             }),
           });
 
+          console.log('Login response status:', res.status);
+
           if (!res.ok) {
-            console.error('Login failed:', res.status, res.statusText);
+            const errorText = await res.text();
+            console.error('Login failed:', res.status, res.statusText, errorText);
             return null;
           }
 
           const data = await res.json();
+          console.log('Login response data:', data);
           
           if (data && data.token && data.user) {
             return {
               id: data.user.id,
               email: data.user.email,
+              name: data.user.name || data.user.email,
               token: data.token
             };
           }
@@ -67,5 +78,7 @@ export default NextAuth({
   session: {
     strategy: 'jwt',
   },
-  secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-here'
+  secret: process.env.NEXTAUTH_SECRET,
+  // Add debug mode for development
+  debug: process.env.NODE_ENV === 'development',
 });
