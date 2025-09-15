@@ -2,7 +2,26 @@
 
 A Next.js-based Shopify analytics dashboard with multi-tenant support, authentication, and comprehensive data visualization.
 
-## 🔍 Overview
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Running the Application](#running-the-application)
+- [Features](#features)
+- [Component Overview](#component-overview)
+- [API Integration](#api-integration)
+- [Authentication Flow](#authentication-flow)
+- [Multi-Tenant Architecture](#multi-tenant-architecture)
+- [Development Guidelines](#development-guidelines)
+- [Troubleshooting](#troubleshooting)
+- [Monitoring and Analytics](#monitoring-and-analytics)
+- [Additional Notes](#additional-notes)
+
+## Overview
 
 This frontend application is a comprehensive Shopify analytics dashboard built with Next.js that provides:
 
@@ -13,7 +32,7 @@ This frontend application is a comprehensive Shopify analytics dashboard built w
 - **Responsive Design**: Mobile-friendly interface
 - **Session Management**: Persistent user sessions with JWT tokens
 
-## 🏗️ Architecture
+## Architecture
 
 ### High-Level Architecture Diagram
 
@@ -110,113 +129,108 @@ sequenceDiagram
     end
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 frontend/
-├── Dockerfile                      # Docker configuration
-├── next.config.js                  # Next.js configuration
-├── package.json                    # Dependencies and scripts
-├── package-lock.json              # Locked dependency versions
-├── .env.local                      # Environment variables (create this)
-├── .env.local.example             # Environment template
+├── Dockerfile
+├── next.config.js
+├── package.json
+├── package-lock.json
+├── .env.local
+├── .env.local.example
 └── src/
-    ├── components/                 # Reusable UI components
-    │   ├── Dashboard.js           # Main analytics dashboard
-    │   ├── LoginForm.js           # Authentication form
-    │   └── TenantSetup.js         # Store management interface
-    ├── lib/                       # Utility libraries
-    │   └── api.js                 # Axios instance with interceptors
-    ├── pages/                     # Next.js pages (routing)
-    │   ├── _app.js               # App wrapper with providers
-    │   ├── api/                  # API routes
+    ├── components/
+    │   ├── Dashboard.js
+    │   ├── LoginForm.js
+    │   └── TenantSetup.js
+    ├── lib/
+    │   └── api.js
+    ├── pages/
+    │   ├── _app.js
+    │   ├── api/
     │   │   └── auth/
-    │   │       └── [...nextauth].js  # NextAuth configuration
-    │   ├── dashboard.js          # Protected dashboard page
-    │   ├── index.js              # Home page with route logic
-    │   └── login.js              # Login page with tenant setup
+    │   │       └── [...nextauth].js
+    │   ├── dashboard.js
+    │   ├── index.js
+    │   └── login.js
     └── styles/
-        └── globals.css           # Global styles
+        └── globals.css
 ```
 
-## ✅ Prerequisites
+**Directory Structure:**
+
+| Directory | Purpose |
+|-----------|---------|
+| `components/` | Reusable UI components |
+| `lib/` | Utility libraries and configurations |
+| `pages/` | Next.js pages and API routes |
+| `pages/api/` | Server-side API routes |
+| `styles/` | Global styles and CSS |
+
+## Prerequisites
 
 Before setting up the frontend, ensure you have:
 
 - **Node.js**: Version 16.x or higher
-- **npm**: Version 8.x or higher (comes with Node.js)
+- **npm**: Version 8.x or higher
 - **Backend API**: Running on port 3001
 - **Modern Browser**: Chrome, Firefox, Safari, or Edge
 
 ### Check Prerequisites
 
 ```bash
-# Check Node.js version
 node --version
-
-# Check npm version
 npm --version
 ```
 
-## 🚀 Installation
+## Installation
 
 ### Step 1: Clone and Navigate
 
 ```bash
-# If you haven't cloned the repository yet
 git clone https://github.com/souvik03-136/xeno-fde-task.git
-cd xeno-fde-task
-
-# Navigate to frontend directory
-cd frontend
+cd xeno-fde-task/frontend
 ```
 
 ### Step 2: Install Dependencies
 
 ```bash
-# Install all required packages
 npm install
 ```
 
-This will install:
-- **Next.js**: React framework
-- **NextAuth.js**: Authentication library
-- **Axios**: HTTP client
-- **Recharts**: Chart library
-- **React**: UI library
+**Installed Packages:**
+- Next.js (React framework)
+- NextAuth.js (Authentication library)
+- Axios (HTTP client)
+- Recharts (Chart library)
+- React (UI library)
 
-## ⚙️ Configuration
+## Configuration
 
 ### Step 1: Create Environment File
 
 ```bash
-# Copy the example environment file
 cp .env.local.example .env.local
 ```
 
 ### Step 2: Generate NextAuth Secret
 
 ```bash
-# Generate a secure random secret
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
-
-Copy the generated string for the next step.
 
 ### Step 3: Configure Environment Variables
 
 Edit `.env.local` with your configuration:
 
 ```env
-# NextAuth Configuration
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your_generated_secret_from_step_2
-
-# Backend API URL
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
-**Important Environment Variables:**
+**Environment Variables:**
 
 | Variable | Description | Example |
 |----------|-------------|---------|
@@ -228,57 +242,53 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 
 Ensure your backend API is running on `http://localhost:3001` before starting the frontend.
 
-## 🏃 Running the Application
+## Running the Application
 
 ### Development Mode
 
 ```bash
-# Start the development server
 npm run dev
 ```
 
-The application will be available at:
-- **URL**: http://localhost:3000
-- **Hot Reload**: Enabled
-- **Source Maps**: Enabled for debugging
+**Development Server:**
+- URL: http://localhost:3000
+- Hot Reload: Enabled
+- Source Maps: Enabled for debugging
 
 ### Production Build
 
 ```bash
-# Build the application
 npm run build
-
-# Start production server
 npm start
 ```
 
-### Development vs Production
+**Environment Comparison:**
 
 | Mode | Command | Port | Hot Reload | Optimization |
 |------|---------|------|------------|--------------|
-| Development | `npm run dev` | 3000 | ✅ Yes | ❌ No |
-| Production | `npm run build && npm start` | 3000 | ❌ No | ✅ Yes |
+| Development | `npm run dev` | 3000 | ✅ | ❌ |
+| Production | `npm run build && npm start` | 3000 | ❌ | ✅ |
 
-## 🎯 Features
+## Features
 
 ### Authentication System
-- **User Registration**: Create new accounts
-- **User Login**: Secure authentication with JWT
-- **Session Management**: Persistent login state
-- **Automatic Redirects**: Smart routing based on auth state
+- User Registration: Create new accounts
+- User Login: Secure authentication with JWT
+- Session Management: Persistent login state
+- Automatic Redirects: Smart routing based on auth state
 
 ### Multi-Tenant Management
-- **Store Creation**: Add multiple Shopify stores
-- **Store Selection**: Switch between different stores
-- **Store Validation**: Verify store access and permissions
+- Store Creation: Add multiple Shopify stores
+- Store Selection: Switch between different stores
+- Store Validation: Verify store access and permissions
 
 ### Analytics Dashboard
-- **Overview Tab**: Key metrics and KPIs
-- **Customer Tab**: Top customer insights
-- **Products Tab**: Revenue breakdown by product
-- **Interactive Charts**: Line charts, bar charts, and pie charts
-- **Date Filtering**: Custom date range selection
-- **Real-time Data**: Manual sync with Shopify API
+- Overview Tab: Key metrics and KPIs
+- Customer Tab: Top customer insights
+- Products Tab: Revenue breakdown by product
+- Interactive Charts: Line charts, bar charts, and pie charts
+- Date Filtering: Custom date range selection
+- Real-time Data: Manual sync with Shopify API
 
 ### Data Visualization
 - **Recharts Integration**: Professional chart library
@@ -289,23 +299,22 @@ npm start
   - Pie Charts: Product revenue distribution
 - **Interactive Tooltips**: Detailed data on hover
 
-## 🧩 Component Overview
+## Component Overview
 
 ### Dashboard.js
+
 The main analytics component featuring:
 
-```javascript
-// Key features
+**Key Features:**
 - Tab-based navigation (Overview, Customers, Products)
 - Real-time data synchronization
 - Interactive charts with Recharts
 - Date range filtering
 - Loading states and error handling
-```
 
 **Props**: `onLogout` (function)
 
-**State Management**:
+**State Management:**
 - `stats`: Dashboard data from API
 - `loading`: Loading state indicator
 - `syncing`: Data synchronization state
@@ -313,55 +322,51 @@ The main analytics component featuring:
 - `activeTab`: Current view tab
 
 ### LoginForm.js
+
 Authentication component with:
 
-```javascript
-// Features
+**Features:**
 - Login/Register toggle
 - Form validation
 - NextAuth integration
 - Automatic tenant fetching post-login
-```
 
 **Props**: `onLogin` (function)
 
-**State Management**:
+**State Management:**
 - `isLogin`: Toggle between login/register
 - `formData`: Form input values
 - `loading`: Submission state
 - `error`: Error message display
 
 ### TenantSetup.js
+
 Store management interface:
 
-```javascript
-// Capabilities
+**Capabilities:**
 - Display existing stores
 - Create new store configurations
 - Store selection and validation
 - Shopify domain and token input
-```
 
-**Props**: 
+**Props:** 
 - `tenants` (array): Available stores
 - `onTenantSelect` (function): Store selection callback
 
-**State Management**:
+**State Management:**
 - `showForm`: Form visibility toggle
 - `formData`: Store creation inputs
 - `loading`: Creation process state
 
-## 🔗 API Integration
+## API Integration
 
 ### API Configuration (lib/api.js)
 
-```javascript
-// Axios instance with automatic:
+Axios instance with automatic:
 - JWT token attachment
 - Tenant ID header injection
 - Error handling and redirects
 - Base URL configuration
-```
 
 ### Request Interceptors
 - **Authentication**: Adds JWT token from NextAuth session
@@ -379,19 +384,17 @@ Store management interface:
 | `/insights/dashboard` | GET | Analytics data | `Authorization`, `x-tenant-id` |
 | `/shopify/sync` | POST | Sync Shopify data | `Authorization`, `x-tenant-id` |
 
-## 🔐 Authentication Flow
+## Authentication Flow
 
 ### NextAuth.js Configuration
 
 The application uses NextAuth.js with a custom credentials provider:
 
-```javascript
-// Key configuration points:
+**Key Configuration:**
 - JWT strategy for session management
 - Custom login endpoint integration
 - Automatic token refresh
 - Session persistence across page reloads
-```
 
 ### Authentication States
 
@@ -417,7 +420,7 @@ stateDiagram-v2
 - **Persistence**: NextAuth handles JWT persistence
 - **Security**: Automatic token refresh and validation
 
-## 🏢 Multi-Tenant Architecture
+## Multi-Tenant Architecture
 
 ### Tenant Context Flow
 
@@ -446,33 +449,27 @@ graph LR
 - **HTTP Headers**: x-tenant-id for API requests
 - **Validation**: Server-side tenant ownership verification
 
-## 🛠️ Development Guidelines
+## Development Guidelines
 
-### Code Structure
+### Code Structure Pattern
+
 ```javascript
-// Component structure pattern
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import api from '../lib/api';
 
 export default function ComponentName({ props }) {
-  // State declarations
   const [state, setState] = useState(initialValue);
-  
-  // Hooks
   const { data: session } = useSession();
   
-  // Effects
   useEffect(() => {
     // Side effects
   }, [dependencies]);
   
-  // Event handlers
   const handleEvent = async () => {
     // Handle events
   };
   
-  // Render
   return (
     <div>
       {/* JSX */}
@@ -482,8 +479,8 @@ export default function ComponentName({ props }) {
 ```
 
 ### Error Handling Pattern
+
 ```javascript
-// Consistent error handling
 const handleAPICall = async () => {
   try {
     setLoading(true);
@@ -507,14 +504,22 @@ const handleAPICall = async () => {
 - **Global State**: localStorage for tenant context
 - **API State**: Direct API calls with loading states
 
-## 🐛 Troubleshooting
+### Code Standards
+- **ES6+ Features**: Use modern JavaScript
+- **React Hooks**: Functional components preferred
+- **Error Boundaries**: Implement proper error handling
+- **Accessibility**: ARIA labels and semantic HTML
+- **Responsive Design**: Mobile-first approach
+
+## Troubleshooting
 
 ### Common Issues
 
 #### 1. Authentication Errors
+
 **Problem**: "Invalid credentials" or login failures
 
-**Solutions**:
+**Solutions:**
 ```bash
 # Check backend API is running
 curl http://localhost:3001/api/auth/login
@@ -527,9 +532,10 @@ cat .env.local
 ```
 
 #### 2. API Connection Issues
+
 **Problem**: "Network Error" or API timeouts
 
-**Solutions**:
+**Solutions:**
 ```bash
 # Verify backend URL
 echo $NEXT_PUBLIC_API_URL
@@ -538,14 +544,14 @@ echo $NEXT_PUBLIC_API_URL
 curl http://localhost:3001/health
 
 # Restart both services
-npm run dev  # Frontend
-# And restart backend
+npm run dev
 ```
 
 #### 3. Tenant Selection Problems
+
 **Problem**: Stuck on tenant selection or "No tenants found"
 
-**Solutions**:
+**Solutions:**
 ```javascript
 // Clear tenant data
 localStorage.removeItem('tenantId');
@@ -557,23 +563,24 @@ localStorage.removeItem('tenantId');
 ```
 
 #### 4. Chart Rendering Issues
+
 **Problem**: Charts not displaying or console errors
 
-**Solutions**:
+**Solutions:**
 ```bash
 # Reinstall chart dependencies
 npm uninstall recharts
 npm install recharts
 
-# Check data format
+# Check data format in browser console
 console.log(stats?.ordersByDate);
-// Should be array of objects with expected keys
 ```
 
 #### 5. NextAuth Configuration
+
 **Problem**: NextAuth errors or callback issues
 
-**Solutions**:
+**Solutions:**
 ```bash
 # Generate new secret
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
@@ -587,6 +594,7 @@ npm run dev
 ```
 
 ### Debug Mode
+
 Enable additional logging:
 
 ```javascript
@@ -598,26 +606,18 @@ if (process.env.NODE_ENV === 'development') {
 ```
 
 ### Performance Issues
+
 ```bash
 # Bundle analysis
 npm run build
-npm run analyze  # If configured
 
-# Check for memory leaks
-# Browser DevTools > Performance tab
+# Check for memory leaks in Browser DevTools > Performance tab
 ```
 
-
-### Code Standards
-- **ES6+ Features**: Use modern JavaScript
-- **React Hooks**: Functional components preferred
-- **Error Boundaries**: Implement proper error handling
-- **Accessibility**: ARIA labels and semantic HTML
-- **Responsive Design**: Mobile-first approach
-
-## 📊 Monitoring and Analytics
+## Monitoring and Analytics
 
 ### Client-Side Error Tracking
+
 ```javascript
 // Add to _app.js for production error tracking
 window.addEventListener('error', (error) => {
@@ -627,6 +627,7 @@ window.addEventListener('error', (error) => {
 ```
 
 ### Performance Monitoring
+
 ```javascript
 // Add performance markers
 performance.mark('dashboard-load-start');
@@ -635,15 +636,11 @@ performance.mark('dashboard-load-end');
 performance.measure('dashboard-load', 'dashboard-load-start', 'dashboard-load-end');
 ```
 
----
-
-## 📝 Additional Notes
+## Additional Notes
 
 - **Security**: All API calls include proper authentication headers
 - **Performance**: Charts are rendered client-side for better UX
 - **Scalability**: Component architecture supports easy feature additions
 - **Maintenance**: Regular dependency updates recommended
 
-For backend setup and API documentation, refer to the backend README.md file.
-
----
+For backend setup and API documentation, refer to [`backend/README.md`](../backend/README.md).
